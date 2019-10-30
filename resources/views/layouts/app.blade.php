@@ -27,8 +27,8 @@ $pending = \App\Tracking_Details::select(
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <meta name="description" content="">
     <meta name="author" content="">
     <link rel="icon" href="{{ asset('resources/img/favicon.png') }}">
@@ -135,28 +135,28 @@ $pending = \App\Tracking_Details::select(
                     </a>
                     <ul class="dropdown-menu">
                         @if($pending > 0)
-                            <li style="background:#eb9316;"><a href="{{ asset('document/pending') }}"><i class="fa fa-warning"></i>&nbsp;&nbsp; Pending Document</a></li>
+                            <li style="background:#eb9316;"><a href="{{ asset('document/pending') }}"><i class="fa fa-warning"></i> Pending Document</a></li>
                         @else
-                            <li><a href="{{ asset('document/pending') }}"><i class="fa fa-hourglass-1"></i>&nbsp;&nbsp; Pending Documents</a></li>
+                            <li><a href="{{ asset('document/pending') }}"><i class="fa fa-hourglass-1"></i> Pending Documents</a></li>
                         @endif
-                        <li class=""><a href="{{ asset('document/accept')  }}"><i class="fa fa-plus"></i>&nbsp;&nbsp; Accept Document</a></li>
+                        <li class=""><a href="{{ asset('document/accept')  }}"><i class="fa fa-plus"></i> Accept Document</a></li>
                         <li class="divider"></li>
-                        <li><a href="{{ asset('document') }}"><i class="fa fa-file"></i>&nbsp;&nbsp; My Documents</a></li>
+                        <li><a href="{{ asset('document') }}"><i class="fa fa-file"></i> My Documents</a></li>
                         @if(Auth::user()->user_priv==1 || Auth::user()->username=='2002000972')
-                        <li><a href="{{ asset('document/list') }}"><i class="fa fa-file"></i>&nbsp;&nbsp; All Documents</a></li>
+                        <li><a href="{{ asset('document/list') }}"><i class="fa fa-file"></i> All Documents</a></li>
                         @endif
                     </ul>
                 </li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-print"></i> View Logs <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{ URL::to('document/logs') }}"><i class="fa fa-file-archive-o"></i>&nbsp;&nbsp; Personal Logs</a></li>
-                        <li class=""><a href="{{ URL::to('document/section/logs') }}"><i class="fa fa-file-archive-o"></i>&nbsp;&nbsp; Section Logs</a></li>
+                        <li><a href="{{ URL::to('document/logs') }}"><i class="fa fa-file-archive-o"></i> Personal Logs</a></li>
+                        <li class=""><a href="{{ URL::to('document/section/logs') }}"><i class="fa fa-file-archive-o"></i> Section Logs</a></li>
                         @if(Auth::user()->user_priv==1)
                         <li class="divider"></li>
-                        <li><a href="{{ URL::to('report') }}"><i class="fa fa-bar-chart"></i>&nbsp;&nbsp; Print Report</a></li>
+                        <li><a href="{{ URL::to('report') }}"><i class="fa fa-bar-chart"></i> Print Report</a></li>
                         <li class="dropdown-submenu">
-                            <a href="#" data-toggle="dropdown"><i class="fa fa-file"></i>&nbsp;&nbsp; Reported Documents</a>
+                            <a href="#" data-toggle="dropdown"><i class="fa fa-file"></i> Reported Documents</a>
                             <ul class="dropdown-menu">
                                 @for($year=2018;$year<=date('Y');$year++)
                                 <li><a href="{{ url('reportedDocuments').'/'.$year }}"><i class="fa fa-sticky-note"></i> {{ $year }}</a></li>
@@ -170,14 +170,14 @@ $pending = \App\Tracking_Details::select(
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-gear"></i> Settings<span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li><a href="{{ asset('/users')  }}"><i class="fa fa-users"></i>&nbsp;&nbsp; Users</a></li>
+                            <li><a href="{{ asset('/users')  }}"><i class="fa fa-users"></i> Users</a></li>
                             <li class="divider"></li>
-                            <li><a href="{{ asset('/designation') }}"><i class="fa fa-arrow-right"></i>&nbsp;&nbsp; Designation</a></li>
-                            <li><a href="{{ asset('/section') }}"><i class="fa fa-arrow-right"></i>&nbsp;&nbsp; Section</a></li>
-                            <li><a href="{{ asset('/division') }}"><i class="fa fa-arrow-right"></i>&nbsp;&nbsp; Division</a></li>
+                            <li><a href="{{ asset('/designation') }}"><i class="fa fa-arrow-right"></i> Designation</a></li>
+                            <li><a href="{{ asset('/section') }}"><i class="fa fa-arrow-right"></i> Section</a></li>
+                            <li><a href="{{ asset('/division') }}"><i class="fa fa-arrow-right"></i> Division</a></li>
                             <li class="divider"></li>
-                            <li><a href="{{ asset('document/filter') }}"><i class="fa fa-filter"></i>&nbsp;&nbsp; Filter Documents</a></li>
-                            <li><a href="{{ asset('users/feedback') }}"><i class="fa fa-bullhorn"></i>&nbsp;&nbsp; User Feedbacks <span class="badge">{{ \App\Feedback::where('is_read','0')->count() }}</span></a></li>
+                            <li><a href="{{ asset('document/filter') }}"><i class="fa fa-filter"></i> Filter Documents</a></li>
+                            <li><a href="{{ asset('users/feedback') }}"><i class="fa fa-bullhorn"></i> User Feedbacks <span class="badge">{{ \App\Feedback::where('is_read','0')->count() }}</span></a></li>
                         </ul>
                     </li>
                 @endif
@@ -193,9 +193,9 @@ $pending = \App\Tracking_Details::select(
                         Account
                         <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{ asset('/change/password')  }}"><i class="fa fa-unlock"></i>&nbsp;&nbsp; Change Password</a></li>
+                        <li><a href="{{ asset('/change/password')  }}"><i class="fa fa-unlock"></i> Change Password</a></li>
                         <li class="divider"></li>
-                        <li><a href="{{ url('/logout') }}"><i class="fa fa-sign-out"></i>&nbsp;&nbsp; Logout</a></li>
+                        <li><a href="{{ url('/logout') }}"><i class="fa fa-sign-out"></i> Logout</a></li>
                     </ul>
                 </li>
             </ul>
