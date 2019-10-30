@@ -84,7 +84,7 @@
                 <div class="alert alert-info">
                     <blockquote style="text-align: justify;text-justify: inter-word; font-size: 100%">
                         If you encountered an error in document tracking system,
-                        please send us feedback and suggestion. Thank you! test
+                        please send us feedback and suggestion. Thank you! Test to github
                     </blockquote>
                 </div>
                 <textarea class="form-control" name="feedback" required></textarea><br>
