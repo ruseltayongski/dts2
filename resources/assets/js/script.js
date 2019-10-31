@@ -432,7 +432,7 @@ function isEmpty(val){
         checkDestinationForm();
     });
 
-    function putRoute(form)
+    function putRoute(form) //if wala na exist sa release
     {
         console.log(form.data('id'));
         var route_no = form.data('route_no');
@@ -441,11 +441,12 @@ function isEmpty(val){
         $('#currentID').val(form.data('id'));
     }
 
-    function changeRoute(form,id)
+    function changeRoute(form,id) //if na exist sa release
     {
         var route_no = form.data('route_no');
         $('#route_no').val(route_no);
         $('#op').val(id);
+        $('#currentID').val(form.data('id'));
     }
     function checkDestinationForm(){
         var division = $('.filter-division').val();

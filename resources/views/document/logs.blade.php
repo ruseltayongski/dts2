@@ -129,16 +129,16 @@ $code = Session::get('doc_type_code');
                 <thead>
                 <tr>
                     <th width="8%"></th>
-                    <th width="17%">Route # / Remarks</th>
-                    <th width="15%">Received Date</th>
-                    <th width="15%">Received From</th>
-                    <th width="15%">Released Date</th>
-                    <th width="15%">Released To</th>
-                    <th width="20%">Document Type</th>
+                    <th width="18%">Route No</th>
+                    <th width="15%">Document Created By</th>
+                    <th width="10%">Created Remarks</th>
+                    <th width="10%">Accepted Remarks</th>
+                    <th width="10%">Released To</th>
                 </tr>
                 </thead>
                 <tbody>
                 @foreach($documents as $doc)
+                    <?php $doc_type = \App\Http\Controllers\DocumentController::docTypeName($doc->doc_type); ?>
                     <tr>
                         <td>
                             <a href="#track" data-link="{{ asset('document/track/'.$doc->route_no) }}" data-route="{{ $doc->route_no }}" data-toggle="modal" class="btn btn-sm btn-success col-sm-12"><i class="fa fa-line-chart"></i> Track</a>
@@ -146,37 +146,45 @@ $code = Session::get('doc_type_code');
                         <td>
                             <a class="title-info" data-route="{{ $doc->route_no }}" data-link="{{ asset('/document/info/'.$doc->route_no) }}" href="#document_info" data-toggle="modal">{{ $doc->route_no }}</a>
                             <br>
-                            {!! nl2br($doc->description) !!}
+                            <small class="text-success">({{ $doc_type }})</small>
                         </td>
-                        <td>{{ date('M d, Y',strtotime($doc->date_in)) }}<br>{{ date('h:i:s A',strtotime($doc->date_in)) }}</td>
                         <td>
-                            <?php $user = Users::find($doc->delivered_by);?>
-                            @if($user)
-                            {{ $user->fname }}
-                            {{ $user->lname }}
+                            <?php $user = Users::find($doc->prepared_by);?>
+                            <span >{{ $user->fname }} {{ $user->lname }}</span>
                             <br>
-                            <em>({{ Section::find($user->section)->description }})</em>
+                            <small class="text-success">({{ Section::find($user->section)->description }})</small>
+                        </td>
+                        <td>
+                            @if($doc->doc_type == 'PRR_S')
+                                <span>{{ $doc->tracking_master_purpose }}</span>
                             @else
-
-                                <?php
-                                    if($x = \App\Tracking_Details::where('received_by',0)
-                                            ->where('id','<',$doc->tracking_id)
-                                            ->where('route_no',$doc->route_no)
-                                            ->first()){
-                                        $string = $x->code;
-                                        $temp1   = explode(';',$string);
-                                        $temp2   = array_slice($temp1, 1, 1);
-                                        $section_id = implode(',', $temp2);
-                                        $x_section = Section::find($section_id)->description;
-                                    } else {
-                                        $x_section = "No Section";
-                                    }
-                                    
-                                ?>
-                                <font class="text-bold text-danger">
-                                    {{ $x_section }}<br />
-                                    <em>(Unconfirmed)</em>
-                                </font>
+                                <span>{{ $doc->tracking_master_remarks }}</span>
+                            @endif
+                            <br>
+                            <small class="text-success">({{ date('M d, Y',strtotime($doc->tracking_master_prepared_by)) }}, <i>{{ date('h:i:s A',strtotime($doc->tracking_master_prepared_by)) }}</i>)</small>
+                        </td>
+                        <td>
+                            <span >{{ $doc->tracking_details_remarks }}</span><br>
+                            <small class="text-success">({{ date('M d, Y',strtotime($doc->date_in)) }}, <i>{{ date('h:i:s A',strtotime($doc->date_in)) }}</i>)</small>
+                        </td>
+                        <td>
+                            <?php
+                                $released_checker = \App\Tracking_Releasev2::where("document_id","=",$doc->tracking_details_id)
+                                                                            ->where("released_by","=",Auth::user()->id)
+                                                                            ->first();
+                            ?>
+                            @if($released_checker)
+                                {{ Section::find($released_checker->released_section_to)->description }}
+                                <br />
+                                <button data-toggle="modal" data-target="#releaseTo" data-id="{{ $doc->tracking_details_id }}" data-route_no="{{ $doc->route_no }}" onclick="" type="button" class="btn btn-info btn-xs"><i class="fa fa-send"></i> Change</button>
+                                <a href="{{ asset('document/report/'.$doc->tracking_details_id .'/cancel') }}" class="btn btn-xs btn-danger"><i class="fa fa-times"></i> Cancel</a>
+                            @else
+                                @if($doc->status==1)
+                                    <div class="text-info">
+                                        [ Cycle End ]
+                                    </div>
+                                @endif
+                                <button data-toggle="modal" data-target="#releaseTo" data-id="{{ $doc->tracking_details_id }}" data-route_no="{{ $doc->route_no }}" onclick="putRoute($(this))" type="button" class="btn btn-info btn-sm"><i class="fa fa-send"></i> Release To</button> <!-- if wala na exist sa release -->
                             @endif
                         </td>
                         <?php
@@ -189,9 +197,7 @@ $code = Session::get('doc_type_code');
                                 $class = 'danger';
                             }
                         ?>
-                        <td class="text-<?php echo $class?>">{{ date('M d, Y',strtotime($out->date_in)) }}<br>{{ date('h:i:s A',strtotime($out->date_in)) }}</td>
                         <td class="text-<?php echo $class?>">
-
                             @if($out->received_by==0)
                                 <?php
                                     $string = $out->code;
@@ -201,7 +207,7 @@ $code = Session::get('doc_type_code');
                                     echo Section::find($section_id)->description;
                                 ?>
                                 <br />
-                                    <button data-toggle="modal" data-target="#releaseTo" data-id="{{ $out->id }}" data-route_no="{{ $out->route_no }}" onclick="changeRoute($(this), '<?php echo $out->id ?>')" type="button" class="btn btn-info btn-xs"><i class="fa fa-send"></i> Change</button>
+                                <button data-toggle="modal" data-target="#releaseTo" data-id="{{ $out->id }}" data-route_no="{{ $out->route_no }}" onclick="changeRoute($(this), '<?php echo $out->id ?>')" type="button" class="btn btn-info btn-xs"><i class="fa fa-send"></i> Change</button>
                                 <a href="{{ asset('document/report/'.$out->id .'/cancel') }}" class="btn btn-xs btn-danger"><i class="fa fa-times"></i> Cancel</a>
                             @else
                                 <?php $user = Users::find($out->received_by);?>
@@ -212,8 +218,8 @@ $code = Session::get('doc_type_code');
                             @endif
                         </td>
                         @else
-                            <?php $rel = Release::where('route_no', $doc->route_no)->where('status','!=',2)->orderBy('id','desc')->first(); ?>
-                            @if($rel)
+                            <?php $check_released = \App\Tracking_Releasev2::where("route_no","=",$doc->route_no)->where("released_by","=",Auth::user()->id)->orderBy('id','desc')->first() ?>
+                            @if($check_released)
                                 <?php
                                     $now = date('Y-m-d H:i:s');
                                     $time = Rel::hourDiff($rel->date_reported,$now);
@@ -226,22 +232,21 @@ $code = Session::get('doc_type_code');
                                     {{ Section::find($rel->section_id)->description }}
                                     <br />
                                     @if($rel->status==0)
-                                        <button data-toggle="modal" data-target="#releaseTo" data-route_no="{{ $doc->route_no }}" onclick="changeRoute($(this), '<?php echo $rel->id ?>')" type="button" class="btn btn-info btn-xs"><i class="fa fa-send"></i> Change</button>
+                                        <button data-toggle="modal" data-target="#releaseTo" data-route_no="{{ $doc->route_no }}" onclick="changeRoute($(this), '<?php echo $rel->id ?>')" type="button" class="btn btn-info btn-xs"><i class="fa fa-send"></i> Change</button> <!-- if na exist sa release -->
                                         <a href="{{ asset('document/report/'.$rel->id .'/cancel/status') }}" class="btn btn-xs btn-danger"><i class="fa fa-times"></i> Cancel</a>
                                     @endif
                                 </td>
                             @else
-                                <td colspan="2" class="text-center" style="vertical-align: middle;">
+                                <td class="text-center" style="vertical-align: middle;">
                                     @if($doc->status==1)
                                         <div class="text-info">
                                             [ Cycle End ]
                                         </div>
                                     @endif
-                                    <button data-toggle="modal" data-target="#releaseTo" data-id="{{ $doc->tracking_id }}" data-route_no="{{ $doc->route_no }}" onclick="putRoute($(this))" type="button" class="btn btn-info btn-sm"><i class="fa fa-send"></i> Release To</button>
+                                    <button data-toggle="modal" data-target="#releaseTo" data-id="{{ $doc->tracking_details_id }}" data-route_no="{{ $doc->route_no }}" onclick="putRoute($(this))" type="button" class="btn btn-info btn-sm"><i class="fa fa-send"></i> Release To</button> <!-- if wala na exist sa release -->
                                 </td>
                             @endif
                         @endif
-                        <td>{{ \App\Http\Controllers\DocumentController::docTypeName($doc->doc_type) }}</td>
                     </tr>
                 @endforeach
                 </tbody>
@@ -259,77 +264,7 @@ $code = Session::get('doc_type_code');
 @endsection
     @section('plugin')
 
-    <script>
-        console.log("rusel");
-        $('.filter-division').show();
-        $('#reservation').daterangepicker();
-        $('.filter-division').on('change',function(){
-            checkDestinationForm();
-            var id = $(this).val();
-            var url = "<?php echo asset('getsections/');?>";
-            $('.loading').show();
-            $('.filter_section').html('<option value="">Select section...</option>');
-            $.ajax({
-                url: url+'/'+id,
-                type: "GET",
-                success: function(sections){
-                    jQuery.each(sections,function(i,val){
-                        $('.filter_section').append($('<option>', {
-                            value: val.id,
-                            text: val.description
-                        }));
-                        $('.filter_section').chosen().trigger('chosen:updated');
-                        $('.filter_section').siblings('.chosen-container').css({border:'2px solid red'});
-                    });
-                    $('.loading').hide();
-                }
-            })
-        });
-        $('.filter_section').on('change',function(){
-            checkDestinationForm();
-        });
 
-        function putRoute(form)
-        {
-            var route_no = form.data('route_no');
-            $('#route_no').val(route_no);
-            $('#op').val(0);
-        }
-
-        function changeRoute(form,id)
-        {
-            var route_no = form.data('route_no');
-            $('#route_no').val(route_no);
-            $('#op').val(id);
-        }
-        function checkDestinationForm(){
-            var division = $('.filter-division').val();
-            var section = $('.filter_section').val();
-            if(division.length == 0){
-                $('.filter-division').siblings('.chosen-container').css({border:'2px solid red'});
-            }else{
-                $('.filter-division').siblings('.chosen-container').css({border:'none'});
-            }
-
-            if(section.length == 0){
-                $('.filter_section').siblings('.chosen-container').css({border:'2px solid red'});
-            }else{
-                $('.filter_section').siblings('.chosen-container').css({border:'none'});
-            }
-        }
-        function checkDocTye(){
-            var doc = $('select[name="doc_type"]').val();
-            if(doc.length == 0){
-                $('.error').removeClass('hide');
-            }
-        }
-        function searchDocument(){
-            $('.loading').show();
-            setTimeout(function(){
-                return true;
-            },2000);
-        }
-    </script>
 @endsection
 
 

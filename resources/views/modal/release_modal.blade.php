@@ -8,7 +8,7 @@
                     {{ csrf_field() }}
                     <input type="hidden" name="route_no" id="route_no">
                     <input type="hidden" name="op" id="op" value="0">
-                    <input type="hidden" name="currentID" id="currentID" value="0">
+                    <input type="text" name="currentID" id="currentID" value="0">
                     <div class="form-group">
                         <label>Division</label>
                         <select name="division" class="chosen-select filter-division" required>

@@ -135,11 +135,18 @@ $pending = \App\Tracking_Details::select(
                     </a>
                     <ul class="dropdown-menu">
                         @if($pending > 0)
-                            <li style="background:#eb9316;"><a href="{{ asset('document/pending') }}"><i class="fa fa-warning"></i> Pending Document</a></li>
+                            <li><a href="{{ asset('document/pending') }}"><i class="fa fa-warning"></i>
+                                    Pending Document
+                                    @if($pending > 0)
+                                        <span class="badge" style="background:#eb9316;">{{ $pending }}</span>
+                                    @endif
+                                </a>
+                            </li>
                         @else
                             <li><a href="{{ asset('document/pending') }}"><i class="fa fa-hourglass-1"></i> Pending Documents</a></li>
                         @endif
-                        <li class=""><a href="{{ asset('document/accept')  }}"><i class="fa fa-plus"></i> Accept Document</a></li>
+                        <li class=""><a href="{{ asset('document/accept')  }}"><i class="fa fa-thumbs-up"></i> Accept Documents</a></li>
+                        <li class=""><a href="{{ asset('document/release/multiple')  }}"><i class="fa fa-send"></i> Release Documents</a></li>
                         <li class="divider"></li>
                         <li><a href="{{ asset('document') }}"><i class="fa fa-file"></i> My Documents</a></li>
                         @if(Auth::user()->user_priv==1 || Auth::user()->username=='2002000972')

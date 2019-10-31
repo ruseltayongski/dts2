@@ -14,6 +14,7 @@ Route::post('document', 'DocumentController@search');
 
 //Route::get('document/accept', 'DocumentController@accept')->middleware('access');
 Route::get('document/accept', 'DocumentController@accept');
+Route::match(['GET','POST'],'document/release/multiple', 'ReleaseController@ReleaseMultiple');
 Route::get('document/destroy/{route_no}', 'DocumentController@cancelRequest');
 
 Route::post('document/accept', 'DocumentController@saveDocument'); //for manual accepting

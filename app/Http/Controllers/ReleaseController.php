@@ -23,18 +23,8 @@ class ReleaseController extends Controller
 
     public function addRelease(Request $req){
         $release_to_datein = date('Y-m-d H:i:s');
-        if($req->op != 0){
-            $id = $req->op;
-            Tracking_Details::where('id',$id)->update(array(
-                'code' => 'temp;' . $req->section,
-                'action' => $req->remarks,
-                'date_in' => $release_to_datein,
-                'status' => 0
-            ));
-            $status='releaseUpdated';
-        }else{
-
-            if($req->currentID!=0)
+        if(!$req->op){  //if wala na exist sa release
+            if(!$req->currentID) // if release to section was change
             {
                 $table = Tracking_Details::where('id',$req->currentID)->orderBy('id', 'DESC');
                 $code = isset($table->first()->code) ? $table->first()->code:null;
@@ -60,10 +50,10 @@ class ReleaseController extends Controller
                 {
                     $table->delete();
                 }
-            }else{
+            }else{ // release to default
                 $tracking_details_info = Tracking_Details::where('route_no',$req->route_no)
-                        ->orderBy('id','desc')
-                        ->first();
+                    ->orderBy('id','desc')
+                    ->first();
                 $tracking_details_id = $tracking_details_info->id;
                 $update = array(
                     'code' => null
@@ -81,8 +71,85 @@ class ReleaseController extends Controller
             $q->save();
 
             $status='releaseAdded';
+
+        }else{  // if na exist sa release
+
+            $id = $req->op;
+            Tracking_Details::where('id',$id)->update(array(
+                'code' => 'temp;' . $req->section,
+                'action' => $req->remarks,
+                'date_in' => $release_to_datein,
+                'status' => 0
+            ));
+            $status='releaseUpdated';
+
         }
        return redirect()->back()->with('status',$status);
+    }
+
+    public function ReleaseMultiple(Request $request){
+        if($request->isMethod('post')) {
+            for ($i = 0; $i < count($request->route_no); $i++) {
+                if (!$request->route_no[$i]) {
+                    continue;
+                }
+                $route_no = $request->route_no[$i];
+                $remarks = $request->remarks[$i];
+                $division = $request->division;
+                $section = $request->section;
+
+                if($request->currentID!=0)
+                {
+                    $table = Tracking_Details::where('id',$req->currentID)->orderBy('id', 'DESC');
+                    $code = isset($table->first()->code) ? $table->first()->code:null;
+
+                    $tracking_release = new Tracking_Releasev2();
+                    $tracking_release->released_by = Auth::user()->id;
+                    $tracking_release->released_section_to = $req->section;
+                    $tracking_release->released_date = $release_to_datein;
+                    $tracking_release->remarks = $req->remarks;
+                    $tracking_release->document_id = $table->first()->id;
+                    $tracking_release->route_no = $req->route_no;
+                    $tracking_release->status = "waiting";
+                    $tracking_release->save();
+
+                    $update = array(
+                        'code' => null
+                    );
+
+                    $table->update($update);
+                    $tmp = explode(';',$code);
+                    $code = $tmp[0];
+                    if($code=='return')
+                    {
+                        $table->delete();
+                    }
+                }else{
+                    $tracking_details_info = Tracking_Details::where('route_no',$req->route_no)
+                        ->orderBy('id','desc')
+                        ->first();
+                    $tracking_details_id = $tracking_details_info->id;
+                    $update = array(
+                        'code' => null
+                    );
+                    $table = Tracking_Details::where('id',$tracking_details_id);
+                    $table->update($update);
+                }
+
+                $q = new Tracking_Details();
+                $q->route_no = $req->route_no;
+                $q->date_in = $release_to_datein;
+                $q->action = $req->remarks;
+                $q->delivered_by = Auth::user()->id;
+                $q->code= 'temp;' . $req->section;
+                $q->save();
+
+                $status='releaseAdded';
+
+            }
+            return 'rtayong!';
+        }
+        return view('document.release_multiple');
     }
 
     public function addReport($id,$cancel=null,$status=null)
